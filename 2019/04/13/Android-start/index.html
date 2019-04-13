@@ -103,7 +103,7 @@
 <meta property="og:site_name">
 <meta property="og:description" content="序言&amp;#8195;&amp;#8195;俗话说万事开头难,如果你看到此篇文章,恭喜你,说明你已经迈出了第一步.&amp;#8195;&amp;#8195;源码分析是一个痛并快乐的过程,其中最重要的一点是要坚持.刚进入源码世界的童鞋们,可能你看一会就会感觉到头晕目眩,云里雾里的感觉.这点是很正常的,你在审视着源码,源码同时也在审视着你.相信我如果你坚持下来,多问几个为什么,怎么做的,渐渐的你就会对分析源码越得心应手.最终拨">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-04-13T09:50:44.734Z">
+<meta property="og:updated_time" content="2019-04-13T19:11:58.841Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android P源码分析之一:准备篇">
 <meta name="twitter:description" content="序言&amp;#8195;&amp;#8195;俗话说万事开头难,如果你看到此篇文章,恭喜你,说明你已经迈出了第一步.&amp;#8195;&amp;#8195;源码分析是一个痛并快乐的过程,其中最重要的一点是要坚持.刚进入源码世界的童鞋们,可能你看一会就会感觉到头晕目眩,云里雾里的感觉.这点是很正常的,你在审视着源码,源码同时也在审视着你.相信我如果你坚持下来,多问几个为什么,怎么做的,渐渐的你就会对分析源码越得心应手.最终拨">
@@ -332,12 +332,24 @@
                 
               
 
-              <time title="创建时间：2019-04-13 12:13:41 / 修改时间：17:50:44" itemprop="dateCreated datePublished" datetime="2019-04-13T12:13:41+08:00">2019-04-13</time>
+              <time title="创建时间：2019-04-13 12:13:41" itemprop="dateCreated datePublished" datetime="2019-04-13T12:13:41+08:00">2019-04-13</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-14 03:11:58" itemprop="dateModified" datetime="2019-04-14T03:11:58+08:00">2019-04-14</time>
               
             
           </span>
@@ -398,10 +410,10 @@
 <h2 id="下载AOSP源码"><a href="#下载AOSP源码" class="headerlink" title="下载AOSP源码"></a>下载AOSP源码</h2><p>&#8195;&#8195;由于Android P的Treble特性,<font color="#ff0000"><strong>使用GSI镜像可以刷入VTS认证的设备中</strong></font>(如果你不确认你手上的设备是否支持,推荐购买Google Pixel系列手机),因此我们选用GSI分支.<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">repo init -u https://aosp.tuna.tsinghua.edu.cn/platform/manifest -b pie-gsi</span><br><span class="line">repo sync -cq -j4</span><br></pre></td></tr></table></figure></p>
 <p>&#8195;&#8195;最后等待下载完成.</p>
 <h2 id="编译源码-可选"><a href="#编译源码-可选" class="headerlink" title="编译源码(可选)"></a>编译源码(可选)</h2><p>&#8195;&#8195;<font color="#ff0000"><strong>到此步下载源码流程已经结束了,如果你是一个不满足于在公司等有限场合使用真机调试分析源码的人,请继续往下看,否则可以跳过本章</strong></font></p>
-<p>&#8195;&#8195;在开始编译前,我们需要保证源码中的patch日期与设备上的patch日期一致.</p>
-<p>设备端:查询patch日期<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell getprop ro.build.version.security_patch</span><br><span class="line">yyyy-mm-dd //得到原设备的patch日期,这里用通配符代替</span><br></pre></td></tr></table></figure></p>
-<p>Ubuntu端:修改源码中的patch日期与原设备一致<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi build/core/version_defaults.mk</span><br><span class="line">--- PLATFORM_SECURITY_PATCH := 2019-04-05</span><br><span class="line">+++ PLATFORM_SECURITY_PATCH := yyyy-mm-dd</span><br></pre></td></tr></table></figure></p>
-<p>开始编译:(注意选择正确的arm或arm64版本)<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source build/envsetup.sh</span><br><span class="line">lunch aosp_arm-userdebug or aosp_arm64-userdebug</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure></p>
+<p>&#8195;&#8195;<strong>在开始编译前,我们需要保证源码中的patch日期与设备上的patch日期一致.</strong></p>
+<p>设备端:<font color="#ff0000"><strong>查询patch日期</strong></font><br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell getprop ro.build.version.security_patch</span><br><span class="line">yyyy-mm-dd //得到原设备的patch日期,这里用通配符代替</span><br></pre></td></tr></table></figure></p>
+<p>Ubuntu端:<font color="#ff0000"><strong>修改源码中的patch日期与原设备一致</strong></font><br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi build/core/version_defaults.mk</span><br><span class="line">--- PLATFORM_SECURITY_PATCH := 2019-04-05</span><br><span class="line">+++ PLATFORM_SECURITY_PATCH := yyyy-mm-dd</span><br></pre></td></tr></table></figure></p>
+<p>开始编译:(<font color="#ff0000"><strong>注意选择正确的arm或arm64版本</strong></font>)<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source build/envsetup.sh</span><br><span class="line">lunch aosp_arm_ab-userdebug or aosp_arm64_ab-userdebug</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure></p>
 <h2 id="烧录镜像-可选-amp-谨慎"><a href="#烧录镜像-可选-amp-谨慎" class="headerlink" title="烧录镜像(可选&amp;谨慎)"></a>烧录镜像(可选&amp;谨慎)</h2><p>&#8195;&#8195;<font color="#ff0000"><strong>注:此步操作仅限拥有原设备镜像文件以及会刷机的童鞋操作,注意备份数据,由于不确定因素众多,因此不对编译镜像烧录的结果进行保证以及负责.</strong></font></p>
 <p>1.烧录前需满足以下条件(<font color="#ff0000"><strong>非常重要</strong></font>):</p>
 <blockquote>
@@ -412,7 +424,7 @@
 </li>
 </ul>
 </blockquote>
-<p>2.解锁引导加载程序:<br>&#8195;设置中找到开发者选项,在oem unlock中打勾.然后执行指令<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot bootloader</span><br><span class="line">fastboot oem unlock 或 fastboot flashing unlock</span><br></pre></td></tr></table></figure></p>
+<p>2.解锁引导加载程序:<br>&#8195;<strong>手机设置</strong>—<strong>开发者选项</strong>—<strong>oem unlock勾选</strong>,之后执行指令<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot bootloader</span><br><span class="line">fastboot oem unlock 或 fastboot flashing unlock</span><br></pre></td></tr></table></figure></p>
 <p>&#8195;在屏幕上确认解锁</p>
 <p>3.停用设备认证启动(如提示无vbmeta分区,则可忽略)<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot bootloader</span><br><span class="line">fastboot flash vbmeta vbmeta.img</span><br></pre></td></tr></table></figure></p>
 <p>4.刷入system镜像并清空data分区<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fastboot flash system system.img</span><br><span class="line">fastboot -w</span><br><span class="line">fastboot reboot</span><br></pre></td></tr></table></figure></p>
