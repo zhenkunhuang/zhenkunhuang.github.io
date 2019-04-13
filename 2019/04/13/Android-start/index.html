@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="序言&amp;#8195;&amp;#8195;俗话说万事开头难,如果你看到此篇文章,恭喜你,说明你已经迈出了第一步.&amp;#8195;&amp;#8195;源码分析是一个痛并快乐的过程,其中最重要的一点是要坚持.刚进入源码世界的童鞋们,可能你看一会就会感觉到头晕目眩,云里雾里的感觉.这点是很正常的,你在审视着源码,源码同时也在审视着你.相信我如果你坚持下来,多问几个为什么,怎么做的,渐渐的你就会对分析源码越得心应手.最终拨">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android P源码分析之一:准备篇">
+<meta property="og:url" content="http://yoursite.com/2019/04/13/Android-start/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="序言&amp;#8195;&amp;#8195;俗话说万事开头难,如果你看到此篇文章,恭喜你,说明你已经迈出了第一步.&amp;#8195;&amp;#8195;源码分析是一个痛并快乐的过程,其中最重要的一点是要坚持.刚进入源码世界的童鞋们,可能你看一会就会感觉到头晕目眩,云里雾里的感觉.这点是很正常的,你在审视着源码,源码同时也在审视着你.相信我如果你坚持下来,多问几个为什么,怎么做的,渐渐的你就会对分析源码越得心应手.最终拨">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T06:14:36.845Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android P源码分析之一:准备篇">
+<meta name="twitter:description" content="序言&amp;#8195;&amp;#8195;俗话说万事开头难,如果你看到此篇文章,恭喜你,说明你已经迈出了第一步.&amp;#8195;&amp;#8195;源码分析是一个痛并快乐的过程,其中最重要的一点是要坚持.刚进入源码世界的童鞋们,可能你看一会就会感觉到头晕目眩,云里雾里的感觉.这点是很正常的,你在审视着源码,源码同时也在审视着你.相信我如果你坚持下来,多问几个为什么,怎么做的,渐渐的你就会对分析源码越得心应手.最终拨">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2019/04/13/Android-start/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android P源码分析之一:准备篇 | </title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title"></span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/13/Android-start/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sky.Huang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content>
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android P源码分析之一:准备篇
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-13 12:13:41 / 修改时间：14:14:36" itemprop="dateCreated datePublished" datetime="2019-04-13T12:13:41+08:00">2019-04-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="序言"><a href="#序言" class="headerlink" title="序言"></a>序言</h2><p>&#8195;&#8195;俗话说万事开头难,如果你看到此篇文章,恭喜你,说明你已经迈出了第一步.<br>&#8195;&#8195;源码分析是一个痛并快乐的过程,其中<font color="#ff0000"><strong>最重要的一点是要坚持</strong></font>.刚进入源码世界的童鞋们,可能你看一会就会感觉到头晕目眩,云里雾里的感觉.这点是很正常的,你在审视着源码,源码同时也在审视着你.相信我如果你坚持下来,多问几个为什么,怎么做的,渐渐的你就会对分析源码越得心应手.<font color="#ff0000"><strong>最终拨开云雾见天日,走向茅塞顿开的舒畅</strong></font>.<br>&#8195;&#8195;上面说了这么多,回到主题.要分析一个事物,至少你要有前提条件,那就是获取源码.</p>
+<h2 id="硬件要求"><a href="#硬件要求" class="headerlink" title="硬件要求"></a>硬件要求</h2><blockquote>
+<ul>
+<li>CPU: 4核心以上</li>
+<li>RAM: 16G或以上,注意这里指的是物理机的情况,如果使用虚拟机,那么需要24G以上的内存,其中16G分配给虚拟机.</li>
+<li>ROM: 250G以上</li>
+</ul>
+</blockquote>
+<h2 id="软件要求"><a href="#软件要求" class="headerlink" title="软件要求"></a>软件要求</h2><blockquote>
+<ul>
+<li>Linux操作系统:Google官方推荐Ubuntu LTS 14.04 .我用的则是当前最新的<a href="https://www.ubuntu.com/download/desktop" target="_blank" rel="noopener">ubuntu 18.04</a></li>
+<li>虚拟机:VMware Workstation</li>
+</ul>
+</blockquote>
+<h2 id="搭建环境"><a href="#搭建环境" class="headerlink" title="搭建环境"></a>搭建环境</h2><ol>
+<li><p>当vmware安装好ubuntu后,默认官方的源在国内下载很慢,推荐换成<a href="http://mirrors.ustc.edu.cn/help/ubuntu.html" target="_blank" rel="noopener">中科大</a>的源.</p>
+</li>
+<li><p>源更换完成后,下载所需的软件包:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install git-core repo libc6-dev-i386 unzip</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置linux环境:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">export REPO_URL='https://mirrors.tuna.tsinghua.edu.cn/git/git-repo/'</span><br><span class="line">mkdir WORKING_DIRECTORY</span><br><span class="line">cd WORKING_DIRECTORY</span><br><span class="line">git config --global user.name "Your Name"</span><br><span class="line">git config --global user.email "you@example.com"</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="下载AOSP源码"><a href="#下载AOSP源码" class="headerlink" title="下载AOSP源码"></a>下载AOSP源码</h2><p>&#8195;&#8195;由于Android P的Treble特性,<font color="#ff0000"><strong>使用GSI镜像可以刷入VTS认证的设备中</strong></font>(如果你不确认你手上的设备是否支持,推荐购买Google Pixel系列手机),因此我们选用GSI分支.<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">repo init -u https://aosp.tuna.tsinghua.edu.cn/platform/manifest -b pie-gsi</span><br><span class="line">repo sync -cq -j4</span><br></pre></td></tr></table></figure></p>
+<p>&#8195;&#8195;最后等待下载完成.</p>
+<h2 id="编译源码-可选"><a href="#编译源码-可选" class="headerlink" title="编译源码(可选)"></a>编译源码(可选)</h2><p>&#8195;&#8195;<font color="#ff0000"><strong>到此步下载源码流程已经结束了,如果你是一个不满足于在公司等有限场合使用真机调试分析源码的人,请继续往下看,否则可以跳过本章</strong></font></p>
+<p>&#8195;&#8195;在开始编译前,我们需要保证源码中的patch日期与设备上的patch日期一致.</p>
+<p>设备端:查询patch日期<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell getprop ro.build.version.security_patch</span><br><span class="line">yyyy-mm-dd //得到原设备的patch日期,这里用通配符代替</span><br></pre></td></tr></table></figure></p>
+<p>Ubuntu端:修改源码中的patch日期与原设备一致<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi build/core/version_defaults.mk</span><br><span class="line">--- PLATFORM_SECURITY_PATCH := 2019-04-05</span><br><span class="line">+++ PLATFORM_SECURITY_PATCH := yyyy-mm-dd</span><br></pre></td></tr></table></figure></p>
+<p>开始编译:(注意选择正确的arm或arm64版本)<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source build/envsetup.sh</span><br><span class="line">lunch aosp_arm-userdebug or aosp_arm64-userdebug</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure></p>
+<h2 id="烧录镜像-可选-amp-谨慎"><a href="#烧录镜像-可选-amp-谨慎" class="headerlink" title="烧录镜像(可选&amp;谨慎)"></a>烧录镜像(可选&amp;谨慎)</h2><p>&#8195;&#8195;<font color="#ff0000"><strong>注:此步操作仅限拥有原设备镜像文件以及会刷机的童鞋操作,注意备份数据,由于不确定因素众多,因此不对编译镜像烧录的结果进行保证以及负责.</strong></font></p>
+<p>1.烧录前需满足以下条件(<font color="#ff0000"><strong>非常重要</strong></font>):</p>
+<blockquote>
+<ul>
+<li><font color="#ff0000"><strong>设备的安卓版本为Android P</strong></font></li>
+<li><font color="#ff0000"><strong>设备支持VTS认证</strong></font></li>
+<li><font color="#ff0000"><strong>编译的system镜像的patch版本与原设备一致</strong></font>
+</li>
+</ul>
+</blockquote>
+<p>2.解锁引导加载程序:<br>&#8195;设置中找到开发者选项,在oem unlock中打勾.然后执行指令<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot bootloader</span><br><span class="line">fastboot oem unlock 或 fastboot flashing unlock</span><br></pre></td></tr></table></figure></p>
+<p>&#8195;在屏幕上确认解锁</p>
+<p>3.停用设备认证启动(如提示无vbmeta分区,则可忽略)<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot bootloader</span><br><span class="line">fastboot flash vbmeta vbmeta.img</span><br></pre></td></tr></table></figure></p>
+<p>4.刷入system镜像并清空data分区<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fastboot flash system system.img</span><br><span class="line">fastboot -w</span><br><span class="line">fastboot reboot</span><br></pre></td></tr></table></figure></p>
+<p>如果设备能正常开机启动,恭喜你已迈入本地分析源码的路途上了.<br>如果设备无法正常开机启动,那么请刷回原设备镜像.推荐使用Google Pixel系列手机.</p>
+<p align="center"><strong>本章完</strong></p>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sky.Huang</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#序言"><span class="nav-number">1.</span> <span class="nav-text">序言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#硬件要求"><span class="nav-number">2.</span> <span class="nav-text">硬件要求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#软件要求"><span class="nav-number">3.</span> <span class="nav-text">软件要求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#搭建环境"><span class="nav-number">4.</span> <span class="nav-text">搭建环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#下载AOSP源码"><span class="nav-number">5.</span> <span class="nav-text">下载AOSP源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编译源码-可选"><span class="nav-number">6.</span> <span class="nav-text">编译源码(可选)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#烧录镜像-可选-amp-谨慎"><span class="nav-number">7.</span> <span class="nav-text">烧录镜像(可选&amp;谨慎)</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky.Huang</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/schemes/muse.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
