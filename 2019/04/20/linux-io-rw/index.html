@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="简介&amp;#8195;&amp;#8195;IO顾名思义就是input/output.俗话说linux一切皆文件,对文件的操作不外乎就读和写.这里我们来介绍read和write函数. 函数原型readSYNOPSIS12#include &amp;lt;unistd.h&amp;gt;ssize_t read(int fd, void *buf, size_t count); RETURN VALUE&amp;#8195;&amp;#819">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux基础知识之IO操作">
+<meta property="og:url" content="http://yoursite.com/2019/04/20/linux-io-rw/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="简介&amp;#8195;&amp;#8195;IO顾名思义就是input/output.俗话说linux一切皆文件,对文件的操作不外乎就读和写.这里我们来介绍read和write函数. 函数原型readSYNOPSIS12#include &amp;lt;unistd.h&amp;gt;ssize_t read(int fd, void *buf, size_t count); RETURN VALUE&amp;#8195;&amp;#819">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-20T08:17:31.457Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux基础知识之IO操作">
+<meta name="twitter:description" content="简介&amp;#8195;&amp;#8195;IO顾名思义就是input/output.俗话说linux一切皆文件,对文件的操作不外乎就读和写.这里我们来介绍read和write函数. 函数原型readSYNOPSIS12#include &amp;lt;unistd.h&amp;gt;ssize_t read(int fd, void *buf, size_t count); RETURN VALUE&amp;#8195;&amp;#819">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2019/04/20/linux-io-rw/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Linux基础知识之IO操作 | </title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title"></span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/20/linux-io-rw/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sky.Huang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content>
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux基础知识之IO操作
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-20 15:34:01 / 修改时间：16:17:31" itemprop="dateCreated datePublished" datetime="2019-04-20T15:34:01+08:00">2019-04-20</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>&#8195;&#8195;IO顾名思义就是input/output.俗话说linux一切皆文件,对文件的操作不外乎就读和写.这里我们来介绍read和write函数.</p>
+<h2 id="函数原型"><a href="#函数原型" class="headerlink" title="函数原型"></a>函数原型</h2><h3 id="read"><a href="#read" class="headerlink" title="read"></a>read</h3><p><strong>SYNOPSIS</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> read(<span class="keyword">int</span> fd, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure></p>
+<p><strong>RETURN VALUE</strong><br>&#8195;&#8195;<font color="#ff0000">On success, the number of bytes read is returned</font>(zero indicates end of file)<br>&#8195;&#8195;<font color="#ff0000">On error, -1 is returned, and errno is set appropriately</font></p>
+<h3 id="write"><a href="#write" class="headerlink" title="write"></a>write</h3><p><strong>SYNOPSIS</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure></p>
+<p><strong>RETURN VALUE</strong><br>&#8195;&#8195;<font color="#ff0000">On success, the number of bytes written is returned</font>(zero indicates nothing was written)<br>&#8195;&#8195;<font color="#ff0000">On error, -1 is returned, and errno is set appropriately</font></p>
+<p><strong>参考</strong><br><a href="/2019/04/20/linux-errno-table/" title="Linux常见错误码">Linux常见错误码</a></p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>&#8195;&#8195;这里以C语言为例.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc __unused, <span class="keyword">char</span> **argv __unused)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd[<span class="number">2</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	<span class="keyword">char</span> *sendMsg = <span class="string">"Hello World"</span>;</span><br><span class="line">	<span class="keyword">char</span> recvMsg[<span class="number">128</span>] = &#123; <span class="number">0</span> &#125;;	<span class="comment">//作为例子,这里buffer只用了128字节.实际应以需求为准</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> (pipe(fd) &lt; <span class="number">0</span>) &#123;	        <span class="comment">//管道,fd[0] 为读管道,fd[1] 为写管道</span></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Create pipe fail, reason : %s\n"</span>, strerror(errno));</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (write(fd[<span class="number">1</span>], sendMsg, <span class="built_in">strlen</span>(sendMsg) + <span class="number">1</span>) &lt; <span class="number">0</span>) &#123;		</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"write fail, reason : %s\n"</span>, strerror(errno));</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> (read(fd[<span class="number">0</span>], recvMsg, <span class="keyword">sizeof</span>(recvMsg)/<span class="keyword">sizeof</span>(*recvMsg)) &lt; <span class="number">0</span>) &#123;		</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"read fail, reason : %s\n"</span>, strerror(errno));</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"read message success : %s\n"</span>, recvMsg);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//注意打开fd 和关闭fd 应成对出现,防止fd泄露.</span></span><br><span class="line">	close(fd[<span class="number">0</span>]);</span><br><span class="line">	close(fd[<span class="number">1</span>]);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>运行结果</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">generic_arm64:/ <span class="comment"># example</span></span><br><span class="line">example</span><br><span class="line"><span class="built_in">read</span> message success : Hello World</span><br></pre></td></tr></table></figure></p>
+<h2 id="关于errno"><a href="#关于errno" class="headerlink" title="关于errno"></a>关于errno</h2><p>&#8195;&#8195;<strong>如果你对errno这个错误码值赋值流程感兴趣,可以继续往下看,需要一点汇编基础.否则本章完.</strong><br>&#8195;&#8195;<strong>以下基于ARMv8 64bit体系架构分析</strong></p>
+<p><strong>read.S</strong><br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">#include</span> &lt;private/<span class="keyword">bionic_asm.h&gt;</span></span><br><span class="line"><span class="keyword">ENTRY(read)</span></span><br><span class="line"><span class="keyword"> </span>   <span class="keyword">mov </span>    x8, __NR_read       //read函数的系统调用号赋值给x8寄存器</span><br><span class="line">    <span class="keyword">svc </span>    <span class="number">#0</span>                  //<span class="keyword">svc中断,进入系统调用</span></span><br><span class="line"><span class="keyword"></span></span><br><span class="line"><span class="keyword"> </span>   <span class="keyword">cmn </span>    x0, #(MAX_ERRNO + <span class="number">1</span>)</span><br><span class="line">    cneg    x0, x0, hi</span><br><span class="line">    <span class="keyword">b.hi </span>   __set_errno_internal</span><br><span class="line">    ret</span><br><span class="line"><span class="symbol">END</span>(read)</span><br></pre></td></tr></table></figure></p>
+<p><strong>系统调用返回的错误码都是<font color="#ff0000">相反数</font>,这里以权限不足的错误码EACCES(13)为例来分析该流程.</strong></p>
+<p><strong>1.系统调用read返回错误码EACCES的相反数-13,并将该值<font color="#ff0000">保存在x0寄存器</font>.</strong></p>
+<p><strong>2.<font color="#ff0000">cmn比较指令做加法操作,会引起PSTATE寄存器C标志位发生变化</font></strong><br><strong>-13的16进制:<font color="#ff0000">0xFFFF FFFF FFFF FFF3</font>,MAX_ERRNO + 1的16进制:<font color="#ff0000">0x1000</font>.</strong><br><strong>两者相加,会导致-13的最高位符号位溢出,<font color="#ff0000">因此PSTATE寄存器的C标志位 置1</font>.</strong></p>
+<p><strong>3.hi条件码代表PSTATE的C标志位为1且Z标志位为0.<font color="#ff0000">因此此时hi条件code为true</font></strong></p>
+<p><strong>4.<font color="#ff0000">cneg条件否定指令,cneg x0,x0,hi 等价于if hi == true,then x0 = -x0 else x0 = x0</font></strong><br><strong>因此此处指令执行完后x0 = -x0 也就是<font color="#ff0000">x0 = -(-13) = 13</font></strong></p>
+<p><strong>5.b.hi条件跳转指令,当hi条件码成立,跳转执行__set_errno_internal函数,此处会跳转执行该函数</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> __LIBC_HIDDEN__ <span class="keyword">long</span> __set_errno_internal(<span class="keyword">int</span> n) &#123;</span><br><span class="line">  errno = n;	<span class="comment">//形参n的值为x0寄存器,也就是错误码13,此处完成对errno的赋值</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">-1</span>;	<span class="comment">//返回-1,该值会赋给x0寄存器,因此read函数发生错误时,得到的返回值为-1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>6.跳转lr地址</strong></p>
+<p align="center"><strong>本章完</strong></p>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/20/linux-errno-table/" rel="next" title="Linux基础知识之错误码表">
+                <i class="fa fa-chevron-left"></i> Linux基础知识之错误码表
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sky.Huang</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数原型"><span class="nav-number">2.</span> <span class="nav-text">函数原型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#read"><span class="nav-number">2.1.</span> <span class="nav-text">read</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#write"><span class="nav-number">2.2.</span> <span class="nav-text">write</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">3.</span> <span class="nav-text">例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于errno"><span class="nav-number">4.</span> <span class="nav-text">关于errno</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky.Huang</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人</span>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/schemes/muse.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
