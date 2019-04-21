@@ -96,18 +96,18 @@
 
 
 
-  <meta name="description" content="简介&amp;#8195;&amp;#8195;socketpair会创建一对无名套接字的描述符,具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地).该接口类似pipe,会返回2个fd.不同的是pipe只能单向传输(fd[0]只读,fd[1]只写). 应用场景&amp;#8195;&amp;#8195;socketpair主要用于C/S模式的进程间通讯.由于binder通信具有透传fd的特性,使得sock">
+  <meta name="description" content="简介&amp;#8195;&amp;#8195;socketpair会创建一对无名套接字的描述符,具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地). 应用场景&amp;#8195;&amp;#8195;socketpair主要用于C/S模式的进程间通讯.由于binder通信具有透传fd的特性,使得socketpair不再受限于亲缘关系进程 函数原型SYNOPSIS1234#include &amp;lt;sys">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux基础知识之socketpair">
 <meta property="og:url" content="http://yoursite.com/2019/04/21/linux-socketpair/index.html">
 <meta property="og:site_name">
-<meta property="og:description" content="简介&amp;#8195;&amp;#8195;socketpair会创建一对无名套接字的描述符,具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地).该接口类似pipe,会返回2个fd.不同的是pipe只能单向传输(fd[0]只读,fd[1]只写). 应用场景&amp;#8195;&amp;#8195;socketpair主要用于C/S模式的进程间通讯.由于binder通信具有透传fd的特性,使得sock">
+<meta property="og:description" content="简介&amp;#8195;&amp;#8195;socketpair会创建一对无名套接字的描述符,具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地). 应用场景&amp;#8195;&amp;#8195;socketpair主要用于C/S模式的进程间通讯.由于binder通信具有透传fd的特性,使得socketpair不再受限于亲缘关系进程 函数原型SYNOPSIS1234#include &amp;lt;sys">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/2019/04/21/linux-socketpair/fork_fd.png">
-<meta property="og:updated_time" content="2019-04-21T10:02:22.806Z">
+<meta property="og:updated_time" content="2019-04-21T10:04:07.239Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux基础知识之socketpair">
-<meta name="twitter:description" content="简介&amp;#8195;&amp;#8195;socketpair会创建一对无名套接字的描述符,具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地).该接口类似pipe,会返回2个fd.不同的是pipe只能单向传输(fd[0]只读,fd[1]只写). 应用场景&amp;#8195;&amp;#8195;socketpair主要用于C/S模式的进程间通讯.由于binder通信具有透传fd的特性,使得sock">
+<meta name="twitter:description" content="简介&amp;#8195;&amp;#8195;socketpair会创建一对无名套接字的描述符,具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地). 应用场景&amp;#8195;&amp;#8195;socketpair主要用于C/S模式的进程间通讯.由于binder通信具有透传fd的特性,使得socketpair不再受限于亲缘关系进程 函数原型SYNOPSIS1234#include &amp;lt;sys">
 <meta name="twitter:image" content="http://yoursite.com/2019/04/21/linux-socketpair/fork_fd.png">
 
 
@@ -334,7 +334,7 @@
                 
               
 
-              <time title="创建时间：2019-04-21 17:33:48 / 修改时间：18:02:22" itemprop="dateCreated datePublished" datetime="2019-04-21T17:33:48+08:00">2019-04-21</time>
+              <time title="创建时间：2019-04-21 17:33:48 / 修改时间：18:04:07" itemprop="dateCreated datePublished" datetime="2019-04-21T17:33:48+08:00">2019-04-21</time>
             
 
             
@@ -373,7 +373,7 @@
       
 
       
-        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>&#8195;&#8195;socketpair会创建一对无名套接字的描述符,<font color="#ff0000">具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地)</font>.<br>该接口类似pipe,会返回2个fd.不同的是<font color="#ff0000">pipe只能单向传输(fd[0]只读,fd[1]只写)</font>.</p>
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>&#8195;&#8195;socketpair会创建一对无名套接字的描述符,<font color="#ff0000">具有全双工通信特性(描述符可读也可写),他的域只能为AF_UNIX(本地)</font>.</p>
 <h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><p>&#8195;&#8195;socketpair主要用于C/S模式的进程间通讯.<font color="#ff0000"><strong>由于binder通信具有透传fd的特性,使得socketpair不再受限于亲缘关系进程</strong></font></p>
 <h2 id="函数原型"><a href="#函数原型" class="headerlink" title="函数原型"></a>函数原型</h2><p><strong>SYNOPSIS</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;    </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socketpair</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol, <span class="keyword">int</span> sv[<span class="number">2</span>])</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p><strong>DESCRIPTION</strong></p>
