@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一﹑RefBase类简介&amp;#8195;&amp;#8195;RefBase类引入了计数概念,当类的引用计数为0的时候会自动释放类对象.该方式代替传统手动释放类对象 示例类定义12345678910111213141516171819class LocalRefBase : public RefBase&amp;#123;public:	LocalRefBase() &amp;#123;		printf(&quot;LocalRef">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android P源码分析之RefBase &amp; sp,wp">
+<meta property="og:url" content="http://yoursite.com/2019/05/11/android-RefBase-sp-wp/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="一﹑RefBase类简介&amp;#8195;&amp;#8195;RefBase类引入了计数概念,当类的引用计数为0的时候会自动释放类对象.该方式代替传统手动释放类对象 示例类定义12345678910111213141516171819class LocalRefBase : public RefBase&amp;#123;public:	LocalRefBase() &amp;#123;		printf(&quot;LocalRef">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/05/11/android-RefBase-sp-wp/class_lifetime.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/11/android-RefBase-sp-wp/UML_RefBase&wp&sp.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/11/android-RefBase-sp-wp/class_lifetime_sp_wp.png">
+<meta property="og:updated_time" content="2019-05-11T14:18:27.590Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android P源码分析之RefBase &amp; sp,wp">
+<meta name="twitter:description" content="一﹑RefBase类简介&amp;#8195;&amp;#8195;RefBase类引入了计数概念,当类的引用计数为0的时候会自动释放类对象.该方式代替传统手动释放类对象 示例类定义12345678910111213141516171819class LocalRefBase : public RefBase&amp;#123;public:	LocalRefBase() &amp;#123;		printf(&quot;LocalRef">
+<meta name="twitter:image" content="http://yoursite.com/2019/05/11/android-RefBase-sp-wp/class_lifetime.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2019/05/11/android-RefBase-sp-wp/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Android P源码分析之RefBase & sp,wp | </title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title"></span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/11/android-RefBase-sp-wp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sky.Huang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content>
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android P源码分析之RefBase & sp,wp
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-11 18:52:04 / 修改时间：22:18:27" itemprop="dateCreated datePublished" datetime="2019-05-11T18:52:04+08:00">2019-05-11</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <span class="post-meta-item-text">评论数：</span>
+                <a href="/2019/05/11/android-RefBase-sp-wp/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/05/11/android-RefBase-sp-wp/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="一﹑RefBase类"><a href="#一﹑RefBase类" class="headerlink" title="一﹑RefBase类"></a>一﹑RefBase类</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>&#8195;&#8195;<strong>RefBase类引入了计数概念,当类的引用计数为0的时候会自动释放类对象.该方式代替传统手动释放类对象</strong></p>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p><strong>类定义</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LocalRefBase</span> :</span> <span class="keyword">public</span> RefBase&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	LocalRefBase() &#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"LocalRefBase create\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">virtual</span> ~LocalRefBase() &#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"LocalRefBase destory\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">printfString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"LocalRefBase printfString\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">onFirstRef</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"LocalRefBase onFirstRef\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">onLastStrongRef</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span>* id __unused)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"LocalRefBase onLastStrongRef\n"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p><strong>传统方式</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LocalRefBase *pLocalRb = <span class="keyword">new</span> LocalRefBase();</span><br><span class="line"><span class="keyword">delete</span> pLocalRb;</span><br></pre></td></tr></table></figure></p>
+<p><strong>运行结果</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LocalRefBase create</span><br><span class="line">LocalRefBase destory</span><br></pre></td></tr></table></figure></p>
+<p><strong>RefBase类计数方式</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LocalRefBase *pLocalRb = <span class="keyword">new</span> LocalRefBase(); <span class="comment">/* 见1.1 */</span></span><br><span class="line">pLocalRb -&gt; incStrong(pLocalRb); <span class="comment">/* 强引用计数+1,当前引用计数为1,见1.2 */</span></span><br><span class="line">pLocalRb -&gt; decStrong(pLocalRb); <span class="comment">/* 强引用计数-1,当前引用计数为0,释放对象,见1.3 */</span></span><br></pre></td></tr></table></figure></p>
+<p><strong>运行结果</strong><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LocalRefBase create</span><br><span class="line">LocalRefBase onFirstRef	     /* 强引用计数首次增加时,回调该函数 */ </span><br><span class="line">LocalRefBase onLastStrongRef /* 强引用计数减少到0时,回调该函数 */</span><br><span class="line">LocalRefBase destory</span><br></pre></td></tr></table></figure></p>
+<p><strong>相同点</strong>:构建对象时,都是用的new方式构建对象<br><strong><font color="#ff0000">差异点</font></strong>:释放对象时,<strong>传统方式</strong>需<strong>手动调用delete方法</strong>,而<strong>计数方式</strong>则是<strong>当强引用计数达到0时释放对象(默认生命周期)</strong></p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p><strong>1.1 构造函数</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">RefBase::RefBase()</span><br><span class="line">    : mRefs(<span class="keyword">new</span> weakref_impl(<span class="keyword">this</span>))  <span class="comment">/* 构建weakref_impl,该类用于记录强弱引用计数 */</span></span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">weakref_impl(RefBase* base)</span><br><span class="line">	: mStrong(INITIAL_STRONG_VALUE)	<span class="comment">/* 初始化强引用计数 */</span></span><br><span class="line">	, mWeak(<span class="number">0</span>)	  <span class="comment">/* 初始化弱引用计数 */</span> </span><br><span class="line">	, mBase(base) <span class="comment">/* 记录RefBase类对象 */</span></span><br><span class="line">	, mFlags(<span class="number">0</span>)	  <span class="comment">/* flag = OBJECT_LIFETIME_STRONG(0),代表强引用生命周期 */</span></span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong><font color="#ff0000">总结</font></strong><br>&#8195;&#8195;<strong>1.RefBase构建weakref_impl类,用于记录计数情况</strong><br>&#8195;&#8195;<strong>2.初始化强引用计数为INITIAL_STRONG_VALUE,弱引用计数为0,默认强引用生命周期</strong></p>
+<p><strong>1.2 incStrong</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> RefBase::incStrong(<span class="keyword">const</span> <span class="keyword">void</span>* id) <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">......</span><br><span class="line">    weakref_impl* <span class="keyword">const</span> refs = mRefs;</span><br><span class="line">    refs-&gt;incWeak(id);	<span class="comment">/* 弱引用计数mWeak加1 */</span> </span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 原子操作,强引用计数mStrong加1,返回旧值 */</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int32_t</span> c = refs-&gt;mStrong.fetch_add(<span class="number">1</span>, <span class="built_in">std</span>::memory_order_relaxed); </span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (c != INITIAL_STRONG_VALUE)  &#123;	</span><br><span class="line">    <span class="comment">/* 当旧值不为INITIAL_STRONG_VALUE(非首次增加强引用)时,直接返回 */</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/* 当首次增加强引用时,原子操作 mStrong = mStrong - INITIAL_STRONG_VALUE = 1</span></span><br><span class="line"><span class="comment">     * 并调用成员函数onFirstRef</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int32_t</span> old __unused = refs-&gt;mStrong.fetch_sub(INITIAL_STRONG_VALUE, <span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">    refs-&gt;mBase-&gt;onFirstRef();</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong><font color="#ff0000">总结</font></strong><br>&#8195;&#8195;<strong>1.强引用计数变量mStrong加1,如果是首次增加强引用,则回调成员函数onFirstRef</strong><br>&#8195;&#8195;<strong>2.弱引用计数变量mWeak加1</strong></p>
+<p><strong>1.3 decStrong</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> RefBase::decStrong(<span class="keyword">const</span> <span class="keyword">void</span>* id) <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">......</span><br><span class="line">    weakref_impl* <span class="keyword">const</span> refs = mRefs;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 原子操作,强引用计数mStrong减1,返回旧值 */</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int32_t</span> c = refs-&gt;mStrong.fetch_sub(<span class="number">1</span>, <span class="built_in">std</span>::memory_order_release); </span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (c == <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="comment">/* 当强引用计数旧值为1(当前强引用计数为0) </span></span><br><span class="line"><span class="comment">     * 1. 调用成员函数onLastStrongRef</span></span><br><span class="line"><span class="comment">     * 2. 强引用生命周期(默认)时,释放RefBase对象(pLocalRb)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">        <span class="built_in">std</span>::atomic_thread_fence(<span class="built_in">std</span>::memory_order_acquire);</span><br><span class="line">        refs-&gt;mBase-&gt;onLastStrongRef(id);</span><br><span class="line">        <span class="keyword">int32_t</span> flags = refs-&gt;mFlags.load(<span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">        <span class="keyword">if</span> ((flags&amp;OBJECT_LIFETIME_MASK) == OBJECT_LIFETIME_STRONG) &#123;</span><br><span class="line">            <span class="keyword">delete</span> <span class="keyword">this</span>;</span><br><span class="line">            <span class="comment">// The destructor does not delete refs in this case.</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    refs-&gt;decWeak(id); <span class="comment">/* 弱引用计数减1,见1.3.1 */</span></span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>1.3.1 decWeak</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> RefBase::weakref_type::decWeak(<span class="keyword">const</span> <span class="keyword">void</span>* id)</span><br><span class="line">&#123;</span><br><span class="line">......</span><br><span class="line">    weakref_impl* <span class="keyword">const</span> impl = <span class="keyword">static_cast</span>&lt;weakref_impl*&gt;(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 原子操作,弱引用计数mWeak减1,返回旧值 */</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int32_t</span> c = impl-&gt;mWeak.fetch_sub(<span class="number">1</span>, <span class="built_in">std</span>::memory_order_release); </span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (c != <span class="number">1</span>) <span class="keyword">return</span>; <span class="comment">/* 当旧值不为1(当前弱引用计数不为0)时,返回 */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 弱引用计数为0流程 */</span></span><br><span class="line">    <span class="keyword">int32_t</span> flags = impl-&gt;mFlags.load(<span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">    <span class="keyword">if</span> ((flags&amp;OBJECT_LIFETIME_MASK) == OBJECT_LIFETIME_STRONG) &#123;</span><br><span class="line">    <span class="comment">/* 1. 强引用生命周期(默认) </span></span><br><span class="line"><span class="comment">     * 2. 强引用计数mStrong非初始值INITIAL_STRONG_VALUE</span></span><br><span class="line"><span class="comment">     * 当同时满足以上2个条件时,释放记录引用计数的对象mRefs(pLocalRb -&gt; mRefs)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">        <span class="keyword">if</span> (impl-&gt;mStrong.load(<span class="built_in">std</span>::memory_order_relaxed)</span><br><span class="line">                == INITIAL_STRONG_VALUE) &#123;</span><br><span class="line">            ALOGW(<span class="string">"RefBase: Object at %p lost last weak reference "</span></span><br><span class="line">                    <span class="string">"before it had a strong reference"</span>, impl-&gt;mBase);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">delete</span> impl;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">     <span class="comment">/* 弱引用生命周期</span></span><br><span class="line"><span class="comment">      * 回调成员函数onLastWeakRef,并释放RefBase对象(pLocalRb)</span></span><br><span class="line"><span class="comment">      */</span></span><br><span class="line">        impl-&gt;mBase-&gt;onLastWeakRef(id);</span><br><span class="line">        <span class="keyword">delete</span> impl-&gt;mBase;</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong><font color="#ff0000">总结</font></strong><br>&#8195;&#8195;<strong>1.强引用计数mStrong减1,如果强引用计数为0,则回调成员函数onLastStrongRef</strong><br>&#8195;&#8195;<strong>2.弱引用计数mWeak减1</strong><br>&#8195;&#8195;<strong>3.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>强引用生命周期</th>
+<th>弱引用生命周期</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>强引用计数mStrong为0</strong></td>
+<td>释放RefBase对象</td>
+<td>无动作</td>
+</tr>
+<tr>
+<td><strong>弱引用计数mWeak为0</strong></td>
+<td>当强引用计数非初始值时,释放记录引用计数的对象mRefs</td>
+<td>释放RefBase对象和mRefs对象</td>
+</tr>
+</tbody>
+</table>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><div align="center"><img src="/2019/05/11/android-RefBase-sp-wp/class_lifetime.png" alt="class_lifetime"></div></p>
+<p><strong>从上面的分析中,可以总结出如上图所示的生命周期关系</strong><br><strong>这里值得一提的是,强引用生命周期时</strong><br><strong>mRefs的生命周期 ≥ RefBase的生命周期的原因:</strong><br><strong>1.强引用计数的增加函数,<font color="#ff0000">除了强引用计数mStrong加1外,弱引用计数也会mWeak也会加1</font></strong><br><strong>此时mStrong  == mWeak</strong><br><strong>2.弱引用计数的增加函数,<font color="#ff0000">只会单独对弱引用计数mWeak加1</font>.此时mWeak &gt; mStrong</strong><br><strong>综上可得结论 mWeak ≥ mStrong即mRefs的生命周期 ≥ RefBase的生命周期</strong></p>
+<h1 id="二﹑普通变量和指针变量"><a href="#二﹑普通变量和指针变量" class="headerlink" title="二﹑普通变量和指针变量"></a>二﹑普通变量和指针变量</h1><p>&#8195;&#8195;<strong>我们在讲述sp和wp前,先来看看指针变量和普通变量的生命周期对类对象生命周期的影响</strong></p>
+<h2 id="普通变量"><a href="#普通变量" class="headerlink" title="普通变量"></a>普通变量</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc __unused, <span class="keyword">char</span> **argv __unused)</span> </span>&#123;</span><br><span class="line">	LocalRefBase pLocalRb;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>运行结果</strong><br>LocalRefBase create<br>LocalRefBase destory</p>
+<p><strong><font color="#ff0000">结论</font></strong><br>&#8195;&#8195;<strong>普通变量在生命周期开始时,自动调用类的构造函数.生命周期结束时,自动调用类的析构函数并释放类对象</strong></p>
+<h2 id="指针变量"><a href="#指针变量" class="headerlink" title="指针变量"></a>指针变量</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc __unused, <span class="keyword">char</span> **argv __unused)</span> </span>&#123;</span><br><span class="line">	LocalRefBase *pLocalRb = <span class="keyword">new</span> LocalRefBase();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>运行结果</strong><br>LocalRefBase create</p>
+<p><strong><font color="#ff0000">结论</font></strong><br>&#8195;&#8195;<strong>当从堆中申请类对象所需的内存成功后,调用类的构造函数,指针变量生命周期结束时,不会自动调用类的析构函数,需要手动执行delete方法释放对象内存</strong></p>
+<h2 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h2><p>&#8195;&#8195;<strong>1.<font color="#ff0000">普通变量在其生命周期结束时,会自动调用类的析构函数并释放类对象,而指针变量则需要手动调用delete方法.</font></strong><br>&#8195;&#8195;<strong>2.sp和wp类就是利用了普通变量的特性,在<font color="#ff0000">生命周期开始时</font>关联一个类对象,在构造函数中对关联的类对象<font color="#ff0000">引用计数加1</font>.<font color="#ff0000">生命周期结束</font>时,在析构函数中对关联的类对象<font color="#ff0000">引用计数减1</font></strong></p>
+<h1 id="三﹑sp模板类"><a href="#三﹑sp模板类" class="headerlink" title="三﹑sp模板类"></a>三﹑sp模板类</h1><h2 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h2><p>&#8195;&#8195;<strong>sp全称为strong point:强引用指针,该类的模板类型必须为RefBase类的子类.该类被设计用于智能释放RefBase类对象,解决内存泄露问题</strong></p>
+<h2 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc __unused, <span class="keyword">char</span> **argv __unused)</span> </span>&#123;</span><br><span class="line">    sp&lt;LocalRefBase&gt; spLocalRb(<span class="keyword">new</span> LocalRefBase()); <span class="comment">/* 见下源码分析 */</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>运行结果</strong><br>LocalRefBase create<br>LocalRefBase onFirstRef<br>LocalRefBase onLastStrongRef<br>LocalRefBase destory</p>
+<h2 id="源码分析-1"><a href="#源码分析-1" class="headerlink" title="源码分析"></a>源码分析</h2><p>构造函数<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">sp&lt;T&gt;::sp(T* other)</span><br><span class="line">: m_ptr(other) &#123;</span><br><span class="line">    <span class="keyword">if</span> (other) &#123;</span><br><span class="line">    <span class="comment">/* 调用RefBase类的incStrong函数:强引用计数mStrong加1,弱引用计数mWeak加1</span></span><br><span class="line"><span class="comment">     * 此时mStrong = 1,mWeak = 1.首次增加强引用计数,回调RefBase类成员函数onFirstRef</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">   	    other-&gt;incStrong(<span class="keyword">this</span>);</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>析构函数<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">sp&lt;T&gt;::~sp() &#123;</span><br><span class="line">    <span class="keyword">if</span> (m_ptr) &#123;</span><br><span class="line">    <span class="comment">/* 调用RefBase类的decStrong函数:强引用计数mStrong减1,弱引用计数mWeak减1</span></span><br><span class="line"><span class="comment">     * 此时mStrong = 0,mWeak = 0.强引用计数为0,回调RefBase类成员函数onLastStrongRef并释放RefBase对象.弱引用计数为0,释放mRefs对象</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">   	    m_ptr-&gt;decStrong(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="小结-2"><a href="#小结-2" class="headerlink" title="小结"></a>小结</h2><p>&#8195;&#8195;<strong>1.sp类利用普通变量的特性:</strong><br>&#8195;&#8195;<strong>生命周期开始时:构造函数调用关联的RefBase对象的incStrong函数(<font color="#ff0000">强弱</font>引用计数加1)</strong><br>&#8195;&#8195;<strong>生命周期结束时:析构函数调用关联的RefBase对象的decStrong函数(<font color="#ff0000">强弱</font>引用计数减1)</strong><br>&#8195;&#8195;<strong>2.由于sp类的生命周期关联着<font color="#ff0000">强弱</font>引用计数,因此<font color="#ff0000">sp类间接关联RefBase和mRefs的生命周期</font></strong></p>
+<h1 id="四﹑wp模板类"><a href="#四﹑wp模板类" class="headerlink" title="四﹑wp模板类"></a>四﹑wp模板类</h1><h2 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h2><p>&#8195;&#8195;<strong>wp全称为weak point:弱引用指针,该类的模板类型必须为RefBase类的子类</strong><br>&#8195;&#8195;<strong><font color="#ff0000">由于wp仅关联弱引用计数mWeak,因此在强引用生命周期(默认)时,wp不会关联RefBase的生命周期</font></strong></p>
+<h2 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc __unused, <span class="keyword">char</span> **argv __unused)</span> </span>&#123;	</span><br><span class="line">    <span class="comment">/* 构建wp类对象,构造参数为关联对象LocalRefBase */</span></span><br><span class="line">    wp&lt;LocalRefBase&gt; wpLocalRb(<span class="keyword">new</span> LocalRefBase());</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"for scope begin\n"</span>);</span><br><span class="line">        <span class="comment">/* 默认强生命周期下,wp由于不持有强引用计数mStrong </span></span><br><span class="line"><span class="comment">         * 因此无法保证关联对象LocalRefBase的生存情况,</span></span><br><span class="line"><span class="comment">         * 所以我们不能直接操作关联对象LocalRefBase,防止出现段错误crash,</span></span><br><span class="line"><span class="comment">         * wp类提供了个安全方法promote,该方法会检测LocalRefBase的生存情况</span></span><br><span class="line"><span class="comment">         * 如果关联对象LocalRefBase未被释放,则会返回非空sp,否则返回空sp.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        sp&lt;LocalRefBase&gt; spLocalRb = wpLocalRb.promote();	</span><br><span class="line">        <span class="keyword">if</span> (spLocalRb == <span class="literal">NULL</span>) &#123;  <span class="comment">/* 这里需要做非空判断,确保关联对象存在 */</span></span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"spLocalRb was null\n"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        spLocalRb -&gt; printfString();</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"for scope end\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>运行结果</strong><br>LocalRefBase create<br>for scope begin<br>LocalRefBase printfString<br>for scope end<br>LocalRefBase onLastStrongRef<br>LocalRefBase destory<br>for scope begin<br>spLocalRb was null    </p>
+<p><strong><font color="#ff0000">spLocalRb为空sp分析</font></strong><br>&#8195;&#8195;<strong>1. 第一次for循环结束时,在<font color="#ff0000">作用域内的spLocalRb对象生命周期也跟随结束</font>,因此会调用sp析构函数对</strong><br><strong>关联对象LocalRefBase强弱引用计数减1,<font color="#ff0000">此时由于强引用计数归0,因此会释放关联对象LocalRefBase</font></strong><br>&#8195;&#8195;<strong>2. 第二次for循环到来时,由于关联对象LocalRefBase已被释放因此wp类成员函数promote返回空的sp</strong></p>
+<h2 id="源码分析-2"><a href="#源码分析-2" class="headerlink" title="源码分析"></a>源码分析</h2><p>构造函数<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">wp&lt;T&gt;::wp(T* other)</span><br><span class="line">    : m_ptr(other)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (other) m_refs = other-&gt;createWeak(<span class="keyword">this</span>); <span class="comment">/* 见下 */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">RefBase::weakref_type* RefBase::createWeak(<span class="keyword">const</span> <span class="keyword">void</span>* id) <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">    mRefs-&gt;incWeak(id);	<span class="comment">/* 弱引用计数加1,此时mWeak = 1 */</span></span><br><span class="line">    <span class="keyword">return</span> mRefs;	<span class="comment">/* 返回记录引用计数对象mRefs */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>析构函数<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">wp&lt;T&gt;::~wp()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (m_ptr) m_refs-&gt;decWeak(<span class="keyword">this</span>); <span class="comment">/* 弱引用计数减1,此时mWeak = 0,释放mRefs对象 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>promote函数<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">sp&lt;T&gt; wp&lt;T&gt;::promote() <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">    sp&lt;T&gt; result;</span><br><span class="line"><span class="keyword">if</span> (m_ptr &amp;&amp; m_refs-&gt;attemptIncStrong(&amp;result)) &#123;</span><br><span class="line"><span class="comment">/* 调用mRefs的attemptIncStrong方法,该方法返回关联对象生存情况 见下 */</span></span><br><span class="line">        result.set_pointer(m_ptr); <span class="comment">/* sp类关联对象赋值 */</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> RefBase::weakref_type::attemptIncStrong(<span class="keyword">const</span> <span class="keyword">void</span>* id)</span><br><span class="line">&#123;</span><br><span class="line">......</span><br><span class="line">    incWeak(id); <span class="comment">/* 弱引用计数mWeak加1 */</span></span><br><span class="line">    </span><br><span class="line">    weakref_impl* <span class="keyword">const</span> impl = <span class="keyword">static_cast</span>&lt;weakref_impl*&gt;(<span class="keyword">this</span>);</span><br><span class="line">    <span class="keyword">int32_t</span> curCount = impl-&gt;mStrong.load(<span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (curCount &gt; <span class="number">0</span> &amp;&amp; curCount != INITIAL_STRONG_VALUE) &#123;</span><br><span class="line">    <span class="comment">/* 强引用计数mStrong大于0且不为初始值时</span></span><br><span class="line"><span class="comment">     * 强引用计数mStrong加1,并返回true: 代表关联对象可用</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">        <span class="keyword">if</span> (impl-&gt;mStrong.compare_exchange_weak(curCount, curCount+<span class="number">1</span>,</span><br><span class="line">                <span class="built_in">std</span>::memory_order_relaxed)) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (curCount &lt;= <span class="number">0</span> || curCount == INITIAL_STRONG_VALUE) &#123;</span><br><span class="line">        <span class="keyword">int32_t</span> flags = impl-&gt;mFlags.load(<span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">        <span class="keyword">if</span> ((flags&amp;OBJECT_LIFETIME_MASK) == OBJECT_LIFETIME_STRONG) &#123;</span><br><span class="line">        <span class="comment">/* 强生命周期时</span></span><br><span class="line"><span class="comment">          *--------------------------------------------------------------------------------------------------------------------------</span></span><br><span class="line"><span class="comment">          * 如果强引用计数mStrong小于等于0</span></span><br><span class="line"><span class="comment">          * 说明关联对象生命周期已结束</span></span><br><span class="line"><span class="comment">          * 因此对弱引用计数mWeak减1(对应开头加1)并返回false</span></span><br><span class="line"><span class="comment">          * --------------------------------------------------------------------------------------------------------------------------</span></span><br><span class="line"><span class="comment">          * 如果强引用计数mStrong为初始值</span></span><br><span class="line"><span class="comment">          * 则对强引用计数mStrong加1减INITIAL_STRONG_VALUE,返回true: 代表关联对象可用</span></span><br><span class="line"><span class="comment">          * --------------------------------------------------------------------------------------------------------------------------</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">            <span class="keyword">if</span> (curCount &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">// the last strong-reference got released, the object cannot</span></span><br><span class="line">                <span class="comment">// be revived.</span></span><br><span class="line">                decWeak(id);</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (curCount &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (impl-&gt;mStrong.compare_exchange_weak(curCount, curCount+<span class="number">1</span>,</span><br><span class="line">                        <span class="built_in">std</span>::memory_order_relaxed)) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">/* 弱生命周期时</span></span><br><span class="line"><span class="comment">         * 对强引用计数mStrong加1并返回true:代表关联对象可用</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">            curCount = impl-&gt;mStrong.fetch_add(<span class="number">1</span>, <span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (curCount == INITIAL_STRONG_VALUE) &#123;</span><br><span class="line">        impl-&gt;mStrong.fetch_sub(INITIAL_STRONG_VALUE,</span><br><span class="line">                <span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="小结-3"><a href="#小结-3" class="headerlink" title="小结"></a>小结</h2><p><strong>1.wp类利用普通变量的特性:</strong><br><strong><font color="#ff0000">生命周期开始</font>时:构造函数调用关联的RefBase对象的createWeak函数(<font color="#ff0000">弱引用计数</font>加1并返回对象mRefs).</strong><br><strong><font color="#ff0000">生命周期结束</font>时:析构函数调用关联的mRefs对象的decWeak函数(<font color="#ff0000">弱引用计数</font>减1)</strong><br><strong>2.由于wp类的生命周期<font color="#ff0000">仅关联着弱引用计数</font>mWeak,因此</strong><br><strong><font color="#ff0000">强生命周期</font>时,wp<font color="#ff0000">间接关联mRefs</font>的生命周期</strong><br><strong><font color="#ff0000">弱生命周期</font>时,wp<font color="#ff0000">间接关联RefBase和mRefs</font>的生命周期</strong><br><strong>3.想使用关联对象时,需调用wp成员函数promote,得到sp对象,并且要对该sp对象进行<font color="#ff0000">非空判断</font>.</strong></p>
+<h1 id="五﹑全文总结"><a href="#五﹑全文总结" class="headerlink" title="五﹑全文总结"></a>五﹑全文总结</h1><p><div align="center"><img src="/2019/05/11/android-RefBase-sp-wp/UML_RefBase&amp;wp&amp;sp.png" alt="UML_RefBase&amp;wp&amp;sp"></div></p>
+<p><div align="center"><img src="/2019/05/11/android-RefBase-sp-wp/class_lifetime_sp_wp.png" alt="class_lifetime_sp_wp"></div></p>
+<p><strong><font color="#ff0000">强引用生命周期(默认)</font></strong><br><strong>1.<font color="#ff0000">强引用计数</font>mStrong<font color="#ff0000">关联RefBase</font>类对象的生命周期</strong><br><strong>2.<font color="#ff0000">弱引用计数</font>mWeak<font color="#ff0000">关联RefBase类成员mRefs</font>的生命周期,该类成员mRefs用于记录强弱引用计数情况</strong><br><strong>3.<font color="#ff0000">sp类</font>的生命周期内持有<font color="#ff0000">关联</font>对象的<font color="#ff0000">强弱引用计数</font>,因此sp类<font color="#ff0000">间接关联RefBase对象和mRefs对象</font>的生命周期</strong><br><strong>4.<font color="#ff0000">wp类</font>的生命周期内持有<font color="#ff0000">关联</font>对象的<font color="#ff0000">弱引用计数</font>,因此wp类<font color="#ff0000">间接关联mRefs对象</font>的生命周期</strong></p>
+<p><strong><font color="#ff0000">弱引用生命周期</font></strong><br><strong>1.<font color="#ff0000">强引用计数</font>mStrong<font color="#ff0000">不关联</font>任何对象的生命周期</strong><br><strong>2.<font color="#ff0000">弱引用计数</font>mWeak<font color="#ff0000">关联RefBase类对象和mRefs对象</font>的生命周期</strong><br><strong>3.<font color="#ff0000">sp类</font>的生命周期内持有<font color="#ff0000">关联</font>对象的<font color="#ff0000">强弱引用计数</font>,因此sp类<font color="#ff0000">间接关联RefBase对象和mRefs对象</font>的生命周期</strong><br><strong>4.<font color="#ff0000">wp类</font>的生命周期内持有<font color="#ff0000">关联</font>对象的<font color="#ff0000">弱引用计数</font>,因此wp类<font color="#ff0000">间接关联RefBase对象和mRefs对象</font>的生命周期</strong></p>
+<p align="center"><strong>本章完</strong></p>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/05/android-handler-java/" rel="next" title="Android P源码分析之Handler(JAVA)">
+                <i class="fa fa-chevron-left"></i> Android P源码分析之Handler(JAVA)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sky.Huang</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一﹑RefBase类"><span class="nav-number">1.</span> <span class="nav-text">一﹑RefBase类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例"><span class="nav-number">1.2.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码分析"><span class="nav-number">1.3.</span> <span class="nav-text">源码分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number">1.4.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二﹑普通变量和指针变量"><span class="nav-number">2.</span> <span class="nav-text">二﹑普通变量和指针变量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#普通变量"><span class="nav-number">2.1.</span> <span class="nav-text">普通变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#指针变量"><span class="nav-number">2.2.</span> <span class="nav-text">指针变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结-1"><span class="nav-number">2.3.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三﹑sp模板类"><span class="nav-number">3.</span> <span class="nav-text">三﹑sp模板类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介-1"><span class="nav-number">3.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-1"><span class="nav-number">3.2.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码分析-1"><span class="nav-number">3.3.</span> <span class="nav-text">源码分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结-2"><span class="nav-number">3.4.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四﹑wp模板类"><span class="nav-number">4.</span> <span class="nav-text">四﹑wp模板类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介-2"><span class="nav-number">4.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例-2"><span class="nav-number">4.2.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码分析-2"><span class="nav-number">4.3.</span> <span class="nav-text">源码分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结-3"><span class="nav-number">4.4.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#五﹑全文总结"><span class="nav-number">5.</span> <span class="nav-text">五﹑全文总结</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky.Huang</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人</span>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/schemes/muse.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail,link';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: false,
+    notify: false,
+    appId: '1O6SFHo5IjuhnJWOW6TvJ9uw-gzGzoHsz',
+    appKey: 'eWE8uHVODVHqjJkkWoqENJty',
+    placeholder: 'Leave a comment',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false,
+    lang: '' || 'zh-cn'
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
